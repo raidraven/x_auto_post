@@ -1,1 +1,60 @@
+name: X Auto Post Bot
+
+on:
+  schedule:
+    - cron: "0 23 * * *"
+    - cron: "30 3 * * *"
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run（投稿せず内容確認のみ）"
+        type: boolean
+        default: false
+      day_override:
+        description: "Day番号を上書き（空欄で自動計算）"
+        type: string
+        default: ""
+      slot_override:
+        description: "時間スロット上書き（例: 08:00）"
+        type: string
+        default: ""
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+
+      - name: Botを実行
+        env:
+          X_API_KEY:              ${{ secrets.X_API_KEY }}
+          X_API_SECRET:           ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:         ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET:  ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+          ANTHROPIC_API_KEY:      ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          ARGS=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          if [ -n "${{ github.event.inputs.day_override }}" ]; then
+            ARGS="$ARGS --day ${{ github.event.inputs.day_override }}"
+          fi
+          if [ -n "${{ github.event.inputs.slot_override }}" ]; then
+            ARGS="$ARGS --slot ${{ github.event.inputs.slot_override }}"
+          fi
+          python bot.py $ARGS
 
