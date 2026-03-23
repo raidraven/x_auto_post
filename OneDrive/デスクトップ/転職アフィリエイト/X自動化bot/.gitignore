@@ -1,0 +1,19 @@
+# 絶対にコミットしないもの
+.env
+*.env
+config.py
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ログ・一時ファイル
+*.log
+post_queue.json
