@@ -1,0 +1,48 @@
+name: X Weekly Report
+
+on:
+  # 毎週月曜 朝9:30 JST (UTC 0:30) ── analytics.py の30分後に実行
+  schedule:
+    - cron: "30 0 * * 1"
+
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+
+      - name: 最新アナリティクスCSVを取得
+        env:
+          X_API_KEY:             ${{ secrets.X_API_KEY }}
+          X_API_SECRET:          ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN:        ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
+        run: python analytics.py
+
+      - name: 週次報告書を生成
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python weekly_report.py
+
+      - name: 報告書をコミット・プッシュ
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add X投稿データ/ X週次報告書/
+          git diff --cached --quiet || git commit -m "weekly report: $(date -u '+%Y-%m-%d')"
+          git push
