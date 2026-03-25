@@ -24,7 +24,7 @@ jobs:
           cache: "pip"
 
       - name: 依存パッケージをインストール
-        run: pip install -r requirements.txt
+        run: pip install tweepy anthropic python-dotenv
 
       - name: アナリティクスを取得
         env:
