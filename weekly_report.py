@@ -15,8 +15,8 @@ from account_profile import ACCOUNT_PROFILE
 
 load_dotenv()
 
-DATA_DIR   = "X投稿データ"
-REPORT_DIR = "X週次報告書"
+DATA_DIR   = "OneDrive/デスクトップ/転職アフィリエイト/X運用/X投稿データ"
+REPORT_DIR = "OneDrive/デスクトップ/転職アフィリエイト/X運用/X週次報告書"
 
 
 def load_latest_analytics() -> list[dict]:

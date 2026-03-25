@@ -12,7 +12,7 @@ import tweepy
 
 from x_poster import get_client
 
-LOG_DIR = "X投稿データ"
+LOG_DIR = "OneDrive/デスクトップ/転職アフィリエイト/X運用/X投稿データ"
 
 
 def get_my_user_id(client: tweepy.Client) -> str:
@@ -64,7 +64,7 @@ def fetch_weekly_metrics(client: tweepy.Client, user_id: str) -> list[dict]:
     return tweets
 
 
-def save_csv(tweets: list[dict], output_dir: str = "X投稿データ") -> str:
+def save_csv(tweets: list[dict], output_dir: str = "OneDrive/デスクトップ/転職アフィリエイト/X運用/X投稿データ") -> str:
     os.makedirs(output_dir, exist_ok=True)
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     path = os.path.join(output_dir, f"analytics_{date_str}.csv")
@@ -114,7 +114,7 @@ def print_summary(tweets: list[dict]):
     print()
 
 
-def save_markdown(tweets: list[dict], output_dir: str = "X投稿データ") -> str:
+def save_markdown(tweets: list[dict], output_dir: str = "OneDrive/デスクトップ/転職アフィリエイト/X運用/X投稿データ") -> str:
     os.makedirs(output_dir, exist_ok=True)
     date_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     path = os.path.join(output_dir, f"analytics_{date_str}.md")

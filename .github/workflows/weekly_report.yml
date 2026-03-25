@@ -48,6 +48,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
-          git add X投稿データ/ X週次報告書/
+          git add "OneDrive/デスクトップ/転職アフィリエイト/X運用/X投稿データ/" "OneDrive/デスクトップ/転職アフィリエイト/X運用/X週次報告書/"
           git diff --cached --quiet || git commit -m "weekly report: $(date -u '+%Y-%m-%d')"
           git push
