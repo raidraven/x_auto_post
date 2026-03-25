@@ -12,6 +12,8 @@ jobs:
   report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      contents: write
 
     steps:
       - name: リポジトリをチェックアウト
@@ -40,9 +42,12 @@ jobs:
         run: python weekly_report.py
 
       - name: 報告書をコミット・プッシュ
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
           git add X投稿データ/ X週次報告書/
           git diff --cached --quiet || git commit -m "weekly report: $(date -u '+%Y-%m-%d')"
           git push
