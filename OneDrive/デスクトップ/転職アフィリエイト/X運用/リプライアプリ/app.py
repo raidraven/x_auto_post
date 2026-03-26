@@ -118,17 +118,15 @@ for k, v in defaults.items():
 def page_search():
     st.title("💬 Xリプライ生成")
 
-    # キーワード選択 or 自由入力
-    input_mode = st.radio("キーワード入力方法", ["リストから選ぶ", "自由に入力する"], horizontal=True)
+    # キーワード選択
+    idx = KEYWORDS.index(st.session_state.last_keyword) if st.session_state.last_keyword in KEYWORDS else 0
+    selected = st.selectbox("キーワード（リストから選ぶ）", KEYWORDS, index=idx)
 
-    if input_mode == "リストから選ぶ":
-        idx = KEYWORDS.index(st.session_state.last_keyword) if st.session_state.last_keyword in KEYWORDS else 0
-        keyword = st.selectbox("検索キーワード", KEYWORDS, index=idx)
-    else:
-        keyword = st.text_input("キーワードを入力", placeholder="例: 転職 20代 未経験")
+    # 自由入力（入力した場合はこちらを優先）
+    custom = st.text_input("または自由に入力する", placeholder="例: 転職 20代 未経験　←入力するとこちらが優先")
 
-    if keyword:
-        st.session_state.last_keyword = keyword
+    keyword = custom.strip() if custom.strip() else selected
+    st.session_state.last_keyword = selected
 
     max_results = st.select_slider("表示件数", options=[5, 10, 15, 20], value=10)
 
