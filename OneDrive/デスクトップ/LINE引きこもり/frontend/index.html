@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#7eb8a4">
+  <title>ともこ - 話し相手AI</title>
+
+  <!-- LIFF SDK (本番で使用) -->
+  <!-- <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script> -->
+
+  <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body>
+
+<div class="app">
+  <!-- ヘッダー -->
+  <header class="header">
+    <div class="header-avatar">🌿</div>
+    <div class="header-info">
+      <h1>ともこ</h1>
+      <p>いつでも話を聞くよ</p>
+    </div>
+    <button class="header-mood-btn" id="mood-btn">今日の気分</button>
+  </header>
+
+  <!-- メッセージ一覧 -->
+  <main class="messages" id="messages"></main>
+
+  <!-- 入力エリア -->
+  <div class="input-area">
+    <textarea
+      id="message-input"
+      placeholder="メッセージを入力..."
+      rows="1"
+    ></textarea>
+    <button id="send-btn" aria-label="送信">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- 気分チェックモーダル -->
+<div class="modal-overlay hidden" id="mood-overlay">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" id="mood-close">✕</button>
+    <h2>今日の気分は？</h2>
+    <p>無理に答えなくていいよ。ありのままで</p>
+    <div class="mood-options" id="mood-options"></div>
+    <textarea
+      id="mood-note"
+      placeholder="一言メモ（任意）"
+    ></textarea>
+    <button id="mood-save-btn">記録する</button>
+  </div>
+</div>
+
+<!-- スクリプト -->
+<script src="src/js/config.js"></script>
+<script src="src/js/storage.js"></script>
+<script src="src/js/liff-init.js"></script>
+<script src="src/js/api-client.js"></script>
+<script src="src/js/mood.js"></script>
+<script src="src/js/chat.js"></script>
+
+<script>
+  (async () => {
+    try {
+      await LiffManager.init();
+      Mood.init();
+      Chat.init();
+    } catch (e) {
+      console.error("Init error:", e);
+    }
+  })();
+</script>
+
+</body>
+</html>
