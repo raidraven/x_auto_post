@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日やること自動生成</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+      background: #f5f0eb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 28px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      color: #222;
+      background: #fafafa;
+    }
+
+    textarea:focus { border-color: #4f8ef7; background: #fff; }
+
+    textarea::placeholder { color: #bbb; }
+
+    button {
+      width: 100%;
+      margin-top: 22px;
+      padding: 15px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover { background: #333; }
+    button:active { transform: scale(0.98); }
+    button:disabled { background: #ccc; cursor: not-allowed; }
+
+    .result {
+      margin-top: 28px;
+      padding: 24px 20px;
+      background: #f9f7f4;
+      border-radius: 14px;
+      border: 1.5px solid #ece8e2;
+      display: none;
+    }
+
+    .result-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #1a1a1a;
+      margin-bottom: 14px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #ece8e2;
+      font-size: 15px;
+      color: #222;
+      line-height: 1.5;
+    }
+
+    .task-item:last-child { border-bottom: none; }
+
+    .task-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4f8ef7;
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #888;
+      font-size: 14px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border: 2px solid #ddd;
+      border-top-color: #4f8ef7;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 8px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error {
+      margin-top: 14px;
+      padding: 12px 16px;
+      background: #fff0f0;
+      border: 1px solid #fcc;
+      border-radius: 10px;
+      color: #c00;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>今日やること自動生成</h1>
+    <p class="subtitle">取り組んでいることを入力するだけで、今日やる3つを生成します</p>
+
+    <label for="topic">今取り組んでいることを教えてください</label>
+    <textarea id="topic" rows="3" placeholder="例：XとnoteとYouTube"></textarea>
+
+    <button id="generateBtn" onclick="generate()">今日やること3つを生成する</button>
+
+    <div class="error" id="error"></div>
+
+    <div class="loading" id="loading">
+      <div class="spinner"></div><br>生成中...
+    </div>
+
+    <div class="result" id="result">
+      <div class="result-title"># 今日やる事3つだけ</div>
+      <div id="taskList"></div>
+    </div>
+  </div>
+
+  <script>
+
+    async function generate() {
+      const topic = document.getElementById('topic').value.trim();
+
+      const errorEl = document.getElementById('error');
+      const loadingEl = document.getElementById('loading');
+      const resultEl = document.getElementById('result');
+      const btn = document.getElementById('generateBtn');
+
+      errorEl.style.display = 'none';
+      resultEl.style.display = 'none';
+
+      if (!topic) { showError('取り組んでいることを入力してください。'); return; }
+
+      btn.disabled = true;
+      loadingEl.style.display = 'block';
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 300,
+            messages: [{
+              role: 'user',
+              content: `あなたはタスク整理の専門家です。
+ユーザーが取り組んでいることをもとに、「今日やること」を具体的に3つだけ提案してください。
+
+【取り組んでいること】
+${topic}
+
+【出力ルール】
+- 必ず3つだけ
+- 各タスクは1行、30文字以内
+- 番号なし、記号なし、タスク内容のみ
+- 今日1日で完結できる粒度にする
+- 日本語で出力
+
+出力例（Xとnoteの場合）：
+Xポスト1本投稿する
+リプライを3件する
+noteのネタを1つ書き出す
+
+それでは出力してください：`
+            }]
+          })
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error?.message || `APIエラー: ${res.status}`);
+        }
+
+        const data = await res.json();
+        const text = data.content[0].text.trim();
+        const tasks = text.split('\n').map(t => t.trim()).filter(t => t.length > 0).slice(0, 3);
+
+        const taskList = document.getElementById('taskList');
+        taskList.innerHTML = tasks.map(t => `
+          <div class="task-item">
+            <div class="task-dot"></div>
+            <div>${escapeHtml(t)}</div>
+          </div>
+        `).join('');
+
+        resultEl.style.display = 'block';
+
+      } catch (e) {
+        showError(e.message);
+      } finally {
+        btn.disabled = false;
+        loadingEl.style.display = 'none';
+      }
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Enterキーで生成
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate();
+    });
+  </script>
+</body>
+</html>
